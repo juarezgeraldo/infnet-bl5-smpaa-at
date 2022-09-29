@@ -24,7 +24,7 @@ class ListaEstabelecimentoAdapter(private val listaEstabelecimentos: ArrayList<E
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view: View =
-            LayoutInflater.from(parent.context).inflate(R.layout.lista_estabelecimentos, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.lista_anotacao, parent, false)
         return ViewHolder(view)
     }
 
@@ -40,10 +40,10 @@ class ListaEstabelecimentoAdapter(private val listaEstabelecimentos: ArrayList<E
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         fun bindItem(estabelecimento: Estabelecimento, itemListner: RecyclerViewItemListner, position: Int) {
-            val txtListaEstabelecimento = itemView.findViewById<TextView>(R.id.txtEstabelecimento)
+            val txtListaEstabelecimento = itemView.findViewById<TextView>(R.id.txtLstTitulo)
             txtListaEstabelecimento.setText(estabelecimento.nome)
-            val btnExcluirEstabelecimento = itemView.findViewById<ImageButton>(R.id.btnExcluirEstabelecimento)
-            val btnAlterarEstabelecimento = itemView.findViewById<ImageButton>(R.id.btnAlterarEstabelecimento)
+            val btnExcluirEstabelecimento = itemView.findViewById<ImageButton>(R.id.btnExcluirAnotacao)
+            val btnAlterarEstabelecimento = itemView.findViewById<ImageButton>(R.id.btnAlterarAnotacao)
 
             btnExcluirEstabelecimento.setOnClickListener() {
                 itemListner.recyclerViewBotaoExcluirClicked(it, position)

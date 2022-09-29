@@ -76,14 +76,11 @@ class LoginFragment : Fragment() {
                     .addOnCompleteListener() {
                         if (it.isSuccessful) {
                             mUser = mAuth.currentUser
-                            usuario.id = mUser!!.uid
                             usuario.email = mUser!!.email
-                            usuario.dataCriacao = mUser!!.metadata!!.creationTimestamp.toString()
-                            usuario.dataUltimoAcesso = mUser!!.metadata!!.lastSignInTimestamp.toString()
 
                             sharedViewModel.registraUsusario(usuario)
 
-                            findNavController().navigate(R.id.action_loginFragment_to_menuFragment)
+                            findNavController().navigate(R.id.action_loginFragment_to_anotacaoFragment)
                         } else {
                             Log.i("ERRO ENTRAR LOGIN", it.exception!!.message.toString())
                             Toast.makeText(
@@ -108,14 +105,11 @@ class LoginFragment : Fragment() {
                     .addOnCompleteListener() {
                         if (it.isSuccessful) {
                             mUser = mAuth.currentUser
-                            usuario.id = mUser!!.uid
                             usuario.email = mUser!!.email
-                            usuario.dataCriacao = mUser!!.metadata!!.creationTimestamp.toString()
-                            usuario.dataUltimoAcesso = mUser!!.metadata!!.lastSignInTimestamp.toString()
 
                             sharedViewModel.registraUsusario(usuario)
 
-                            findNavController().navigate(R.id.action_loginFragment_to_menuFragment)
+                            findNavController().navigate(R.id.action_loginFragment_to_anotacaoFragment)
                         } else {
                             Log.i("ERRO CRIAÇÃO LOGIN", it.exception!!.message.toString())
                             Toast.makeText(
@@ -152,15 +146,9 @@ class LoginFragment : Fragment() {
 
     fun updateUser() {
         if (mUser == null) {
-            usuario.id = null
             usuario.email = null
-            usuario.dataCriacao = null
-            usuario.dataUltimoAcesso = null
         } else {
-            usuario.id = mUser!!.uid
             usuario.email = mUser!!.email
-            usuario.dataCriacao = mUser!!.metadata!!.creationTimestamp.toString()
-            usuario.dataUltimoAcesso = mUser!!.metadata!!.lastSignInTimestamp.toString()
             sharedViewModel.registraUsusario(usuario)
         }
     }
@@ -180,13 +168,10 @@ class LoginFragment : Fragment() {
         if (result.resultCode == AppCompatActivity.RESULT_OK) {
             mUser = FirebaseAuth.getInstance().currentUser
             if (mUser != null) {
-                usuario.id = mUser!!.uid
                 usuario.email = mUser!!.email
-                usuario.dataCriacao = mUser!!.metadata!!.creationTimestamp.toString()
-                usuario.dataUltimoAcesso = mUser!!.metadata!!.lastSignInTimestamp.toString()
                 sharedViewModel.registraUsusario(usuario)
 
-                findNavController().navigate(R.id.action_loginFragment_to_menuFragment)
+                findNavController().navigate(R.id.action_loginFragment_to_anotacaoFragment)
             }
         }
     }

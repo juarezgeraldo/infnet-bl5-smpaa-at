@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.estabelecimento.EstabelecimentoFragment" >
+    tools:context=".AnotacaoFragment" >
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabEstabelecimentoLogout"
+        android:id="@+id/fabAnotacaoLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -19,29 +19,39 @@
         tools:ignore="SpeakableTextPresentCheck" />
 
     <TextView
-        android:id="@+id/lblTituloEstabelecimento"
+        android:id="@+id/lblTituloanotacao"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="Cadastro de Estabelecimentos"
+        android:text="Cadastro de Anotações"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/txtUsuario"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Usuario logado"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lblTituloanotacao" />
+
     <TableLayout
         android:id="@+id/tableLayout2"
-        android:layout_width="389dp"
-        android:layout_height="163dp"
+        android:layout_width="390dp"
+        android:layout_height="263dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lblTituloEstabelecimento"
+        app:layout_constraintTop_toBottomOf="@+id/txtUsuario"
         tools:ignore="MissingConstraints">
 
         <TableRow
@@ -49,15 +59,21 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/lblId"
+                android:id="@+id/lblData"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Id:" />
+                android:text="Data:" />
 
-            <TextView
-                android:id="@+id/txtId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+            <EditText
+                android:id="@+id/edtData"
+                android:layout_width="336dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:enabled="true"
+                android:gravity="start|top"
+                android:inputType="date"
+                android:textIsSelectable="false"
+                tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
         </TableRow>
 
         <TableRow
@@ -65,13 +81,54 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/lblEstabelecimento"
+                android:id="@+id/lblLongitude"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nome:" />
+                android:text="Longitude:" />
 
             <EditText
-                android:id="@+id/edtTxtEstabelecimento"
+                android:id="@+id/edtLongitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:enabled="true"
+                android:inputType="text"
+                android:textIsSelectable="false"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/lblLatitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Latitude:" />
+
+            <EditText
+                android:id="@+id/edtLatitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:enabled="true"
+                android:textIsSelectable="false"
+                tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/lblTitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Título:" />
+
+            <EditText
+                android:id="@+id/edtTitulo"
                 android:layout_width="336dp"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -85,38 +142,35 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/lblBairro"
+                android:id="@+id/lblTexto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bairro:" />
+                android:text="Texto:" />
 
             <EditText
-                android:id="@+id/edtTxtBairro"
-                android:layout_width="336dp"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:gravity="start|top"
-                android:inputType="textMultiLine"
-                tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/lblCep"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="CEP:" />
-
-            <EditText
-                android:id="@+id/edtCep"
+                android:id="@+id/edtTexto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="number"
                 tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/lblFoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Foto:" />
+
+            <ImageView
+                android:id="@+id/imgFoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:src="@tools:sample/avatars" />
         </TableRow>
 
     </TableLayout>
@@ -125,9 +179,19 @@
         android:id="@+id/btnSalvar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="32dp"
         android:text="Salvar"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tableLayout2" />
+
+    <Button
+        android:id="@+id/btnFoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:text="Tirar Foto"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tableLayout2" />
 
@@ -151,7 +215,7 @@
             android:orientation="vertical">
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/lstEstabelecimentos"
+                android:id="@+id/lstanotacaos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
