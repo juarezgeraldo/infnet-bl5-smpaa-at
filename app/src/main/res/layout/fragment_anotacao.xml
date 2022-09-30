@@ -71,7 +71,7 @@
                 android:ems="10"
                 android:enabled="true"
                 android:gravity="start|top"
-                android:inputType="date"
+                android:inputType="datetime"
                 android:textIsSelectable="false"
                 tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
         </TableRow>
@@ -133,7 +133,7 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:gravity="start|top"
-                android:inputType="textMultiLine"
+                android:inputType="text"
                 tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
         </TableRow>
 
@@ -152,7 +152,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="number"
+                android:inputType="text"
                 tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
         </TableRow>
 

@@ -1,6 +1,5 @@
 package com.infnet.juarez.avaliacaolimpeza
 
-import android.content.Context
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
@@ -29,20 +28,20 @@ import java.lang.StringBuilder
 import java.util.*
 import kotlin.collections.ArrayList
 
-class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener {
+class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
     private var usuario: Usuario = Usuario()
     private var anotacao: Anotacao = Anotacao()
     private var idanotacaos: ArrayList<String> = ArrayList()
     private val sharedViewModel: DadosViewModel by activityViewModels()
 
-    private var isInclusao: Boolean = false
+    private var isInclusao: Boolean = true
 
     val EXTERNAL_STORAGE_PERMISSION_CODE = 100
     val COARSE_REQUEST = 12345
     val FINE_REQUEST = 54321
 
     @SuppressLint("SimpleDateFormat")
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+    val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,15 +51,19 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener {
         val fragmentBinding = inflater.inflate(R.layout.fragment_anotacao, container, false)
 
         val txtUsuario = fragmentBinding.findViewById<TextView>(R.id.txtUsuario)
-        val edtData = fragmentBinding.findViewById<TextView>(R.id.edtData)
+        val edtData = fragmentBinding.findViewById<EditText>(R.id.edtData)
         val edtLatitude = fragmentBinding.findViewById<EditText>(R.id.edtLatitude)
         val edtLongitude = fragmentBinding.findViewById<EditText>(R.id.edtLongitude)
-        val edtTitulo = fragmentBinding.findViewById<TextView>(R.id.edtTitulo)
-        val edtTexto = fragmentBinding.findViewById<TextView>(R.id.edtTexto)
-        val imgFoto = fragmentBinding.findViewById<TextView>(R.id.imgFoto)
+        val edtTitulo = fragmentBinding.findViewById<EditText>(R.id.edtTitulo)
+        val edtTexto = fragmentBinding.findViewById<EditText>(R.id.edtTexto)
+        val imgFoto = fragmentBinding.findViewById<ImageView>(R.id.imgFoto)
         val btnFoto = fragmentBinding.findViewById<Button>(R.id.btnFoto)
         val btnSalvar = fragmentBinding.findViewById<Button>(R.id.btnSalvar)
         val fabAnotacaoLogout = fragmentBinding.findViewById<FloatingActionButton>(R.id.fabAnotacaoLogout)
+
+        edtData.isEnabled = false
+        edtLatitude.isEnabled = false
+        edtLongitude.isEnabled = false
 
         fabAnotacaoLogout.setOnClickListener(){
             findNavController().navigate(R.id.action_anotacaoFragment_to_loginFragment)
@@ -121,7 +124,7 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener {
     private fun getLocation(tipo: String) {
         var location: Location? = null
         val locationManager =
-            this.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
+            getActivity()?.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
 
         val isServiceEnable =
             locationManager.isProviderEnabled(if (tipo == "NET") LocationManager.NETWORK_PROVIDER else LocationManager.GPS_PROVIDER)
@@ -179,7 +182,7 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener {
     }
 
     private fun gravaRegistro(anotacao: Anotacao) {
-        if (this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (getActivity()?.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             this.requestPermissions(
                 arrayOf(
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -200,9 +203,9 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener {
 
                 val registroTxt = builder.toString()
 
-                val fileOutputStream = openFileOutput(feleName, AppCompatActivity.MODE_APPEND)
-                fileOutputStream.write(registro.toByteArray())
-                fileOutputStream.close()
+                val fileOutputStream = getActivity()?.openFileOutput(feleName, AppCompatActivity.MODE_APPEND)
+                fileOutputStream?.write(registroTxt.toByteArray())
+                fileOutputStream?.close()
             }
         }
     }
@@ -226,25 +229,25 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener {
     }
 
     private fun atualizaListaanotacaos() {
-        val anotacaos: ArrayList<Anotacao> = ArrayList()
-
-        obj.addOnSuccessListener {
-            for (objeto in it) {
-                val anotacao = objeto.toObject(anotacao::class.java)
-                if (!anotacao.nome.isNullOrBlank()) {
-                    anotacaos.add(anotacao)
-                    idanotacaos.add(anotacao.id!!)
-                }
-            }
-            val lstanotacaos =
-                this.requireActivity().findViewById<RecyclerView>(R.id.lstanotacaos)
-            lstanotacaos.layoutManager = LinearLayoutManager(this.requireActivity())
-            val adapter = ListaanotacaoAdapter(anotacaos)
-            adapter.setRecyclerViewItemListner(this)
-            lstanotacaos.adapter = adapter
-        }.addOnFailureListener {
-            val a = "erro"
-        }
+//        val anotacaos: ArrayList<Anotacao> = ArrayList()
+//
+//        obj.addOnSuccessListener {
+//            for (objeto in it) {
+//                val anotacao = objeto.toObject(anotacao::class.java)
+//                if (!anotacao.nome.isNullOrBlank()) {
+//                    anotacaos.add(anotacao)
+//                    idanotacaos.add(anotacao.id!!)
+//                }
+//            }
+//            val lstanotacaos =
+//                this.requireActivity().findViewById<RecyclerView>(R.id.lstanotacaos)
+//            lstanotacaos.layoutManager = LinearLayoutManager(this.requireActivity())
+//            val adapter = ListaanotacaoAdapter(anotacaos)
+//            adapter.setRecyclerViewItemListner(this)
+//            lstanotacaos.adapter = adapter
+//        }.addOnFailureListener {
+//            val a = "erro"
+//        }
     }
 
     private fun atualizaanotacao(anotacao: Anotacao, operacao: String) {
@@ -278,49 +281,40 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener {
     }
 
     override fun recyclerViewBotaoAlterarClicked(view: View, pos: Int) {
-        var anotacao: anotacao = anotacao()
-        val obj = anotacaoDAO.obter(idanotacaos[pos])
-        obj.addOnSuccessListener {
-            anotacao = it.toObject(anotacao::class.java)!!
-
-            val txtId = this.requireActivity().findViewById<TextView>(R.id.txtId)
-            val edtTxtanotacao =
-                this.requireActivity().findViewById<EditText>(R.id.edtData)
-            val edtTxtBairro = this.requireActivity().findViewById<EditText>(R.id.edtTitulo)
-            val edtCep = this.requireActivity().findViewById<EditText>(R.id.edtTexto)
-
-            txtId.setText(anotacao.id)
-            edtTxtanotacao.setText(anotacao.nome)
-            edtTxtBairro.setText(anotacao.bairro)
-            edtCep.setText(anotacao.cep)
-        }.addOnFailureListener {
-        }
+//        var anotacao: anotacao = anotacao()
+//        val obj = anotacaoDAO.obter(idanotacaos[pos])
+//        obj.addOnSuccessListener {
+//            anotacao = it.toObject(anotacao::class.java)!!
+//
+//            val txtId = this.requireActivity().findViewById<TextView>(R.id.txtId)
+//            val edtTxtanotacao =
+//                this.requireActivity().findViewById<EditText>(R.id.edtData)
+//            val edtTxtBairro = this.requireActivity().findViewById<EditText>(R.id.edtTitulo)
+//            val edtCep = this.requireActivity().findViewById<EditText>(R.id.edtTexto)
+//
+//            txtId.setText(anotacao.id)
+//            edtTxtanotacao.setText(anotacao.nome)
+//            edtTxtBairro.setText(anotacao.bairro)
+//            edtCep.setText(anotacao.cep)
+//        }.addOnFailureListener {
+//        }
     }
 
     override fun recyclerViewBotaoExcluirClicked(view: View, pos: Int): Boolean {
-        var anotacao: anotacao = anotacao()
-        val obj = anotacaoDAO.obter(idanotacaos[pos])
-        obj.addOnSuccessListener {
-            anotacao = it.toObject(anotacao::class.java)!!
-            if (!anotacao.nome.isNullOrBlank()) {
-                atualizaanotacao(anotacao, "excluir")
-            }
-        }.addOnFailureListener {
-        }
+//        var anotacao: anotacao = anotacao()
+//        val obj = anotacaoDAO.obter(idanotacaos[pos])
+//        obj.addOnSuccessListener {
+//            anotacao = it.toObject(anotacao::class.java)!!
+//            if (!anotacao.nome.isNullOrBlank()) {
+//                atualizaanotacao(anotacao, "excluir")
+//            }
+//        }.addOnFailureListener {
+//        }
         return true
     }
 
     override fun recyclerViewBotaoEditaClicked(view: View, pos: Int) {
         TODO("Not yet implemented")
     }
-
-    override fun recyclerViewRadioButton(
-        view: View,
-        perguntaResposta: PerguntaResposta,
-        resposta: Boolean
-    ) {
-        TODO("Not yet implemented")
-    }
-
 
 }
