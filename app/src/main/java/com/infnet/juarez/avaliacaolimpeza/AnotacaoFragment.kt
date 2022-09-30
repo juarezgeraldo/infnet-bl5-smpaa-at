@@ -2,13 +2,16 @@ package com.infnet.juarez.avaliacaolimpeza
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -23,22 +26,26 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.infnet.juarez.avaliacaolimpeza.modelo.Anotacao
+import com.infnet.juarez.avaliacaolimpeza.modelo.Foto
 import com.infnet.juarez.avaliacaolimpeza.modelo.Usuario
-import java.lang.StringBuilder
+import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
+
+class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener {
     private var usuario: Usuario = Usuario()
     private var anotacao: Anotacao = Anotacao()
-    private var idanotacaos: ArrayList<String> = ArrayList()
+    private var foto: Foto = Foto()
     private val sharedViewModel: DadosViewModel by activityViewModels()
 
     private var isInclusao: Boolean = true
 
-    val EXTERNAL_STORAGE_PERMISSION_CODE = 100
+    val EXTERNAL_STORAGE_PERMISSION_CODE = 200
     val COARSE_REQUEST = 12345
     val FINE_REQUEST = 54321
+    val CAMERA_PERMISSION_CODE = 100
+    val CAMERA_REQUEST = 1888
 
     @SuppressLint("SimpleDateFormat")
     val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm")
@@ -59,24 +66,24 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
         val imgFoto = fragmentBinding.findViewById<ImageView>(R.id.imgFoto)
         val btnFoto = fragmentBinding.findViewById<Button>(R.id.btnFoto)
         val btnSalvar = fragmentBinding.findViewById<Button>(R.id.btnSalvar)
-        val fabAnotacaoLogout = fragmentBinding.findViewById<FloatingActionButton>(R.id.fabAnotacaoLogout)
+        val btnGps = fragmentBinding.findViewById<Button>(R.id.btnGps)
+        val fabAnotacaoLogout =
+            fragmentBinding.findViewById<FloatingActionButton>(R.id.fabAnotacaoLogout)
 
         edtData.isEnabled = false
         edtLatitude.isEnabled = false
         edtLongitude.isEnabled = false
 
-        fabAnotacaoLogout.setOnClickListener(){
-            findNavController().navigate(R.id.action_anotacaoFragment_to_loginFragment)
-        }
-
         anotacao.data = dateFormat.format(Date())
-
-        getLocation("GPS")
-
 
         edtData.setText(dateFormat.format(Date()))
 
-
+        var location = getLocation("GPS")
+        if (location == null) {
+            location = getLocation("NET")
+        }
+        anotacao.latitude = location?.latitude.toString()
+        anotacao.longitude = location?.longitude.toString()
 
         usuario = sharedViewModel.recuperaUsusario()!!
 
@@ -91,17 +98,32 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
                 anotacao.titulo = edtTitulo.text.toString()
                 anotacao.texto = edtTexto.text.toString()
                 if (isInclusao) {
-                    atualizaanotacao(anotacao, "incluir")
+                    atualizaAnotacao("incluir")
                 } else {
-                    this.atualizaanotacao(anotacao, "alterar")
+                    this.atualizaAnotacao("alterar")
                 }
                 edtTexto.setText(null)
                 edtTitulo.setText(null)
                 edtData.setText(dateFormat.format(Date()))
-
                 this.atualizaListaanotacaos()
             }
         }
+
+        btnFoto.setOnClickListener() {
+            if (this.getActivity()
+                    ?.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+            ) {
+                this.requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+            } else {
+                val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                startActivityForResult(cameraIntent, CAMERA_REQUEST)
+            }
+        }
+
+        fabAnotacaoLogout.setOnClickListener() {
+            findNavController().navigate(R.id.action_anotacaoFragment_to_loginFragment)
+        }
+
         atualizaListaanotacaos()
 
         return fragmentBinding
@@ -113,6 +135,12 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val edtLatitude = requireActivity().findViewById<EditText>(R.id.edtLatitude)
+        val edtLongitude = requireActivity().findViewById<EditText>(R.id.edtLongitude)
+
+        edtLatitude.setText(anotacao.latitude)
+        edtLongitude.setText(anotacao.longitude)
+
         atualizaListaanotacaos()
     }
 
@@ -121,7 +149,7 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
 //        atualizaListaanotacaos()
     }
 
-    private fun getLocation(tipo: String) {
+    private fun getLocation(tipo: String): Location? {
         var location: Location? = null
         val locationManager =
             getActivity()?.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
@@ -130,9 +158,10 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
             locationManager.isProviderEnabled(if (tipo == "NET") LocationManager.NETWORK_PROVIDER else LocationManager.GPS_PROVIDER)
         if (isServiceEnable) {
             Log.i("DR4", "Indo pela Rede")
-            if (checkSelfPermission(this.requireActivity(),
+            if (checkSelfPermission(
+                    this.requireActivity(),
                     if (tipo == "NET") android.Manifest.permission.ACCESS_COARSE_LOCATION else Manifest.permission.ACCESS_FINE_LOCATION
-                ).equals( PackageManager.PERMISSION_GRANTED)
+                ).equals(PackageManager.PERMISSION_GRANTED)
             ) {
                 locationManager.requestLocationUpdates(
                     if (tipo == "NET") LocationManager.NETWORK_PROVIDER else LocationManager.GPS_PROVIDER,
@@ -142,8 +171,6 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
                 )
                 location =
                     locationManager.getLastKnownLocation(if (tipo == "NET") LocationManager.NETWORK_PROVIDER else LocationManager.GPS_PROVIDER)
-                anotacao.latitude = location?.latitude.toString()
-                anotacao.longitude = location?.longitude.toString()
             } else {
                 requestPermissions(
                     arrayOf(if (tipo == "NET") android.Manifest.permission.ACCESS_COARSE_LOCATION else Manifest.permission.ACCESS_FINE_LOCATION),
@@ -151,6 +178,7 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
                 )
             }
         }
+        return location
     }
 
     override fun onLocationChanged(p0: Location) {
@@ -163,17 +191,35 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if ((requestCode == COARSE_REQUEST || requestCode == FINE_REQUEST) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            this.getLocation("GPS")
+        if (requestCode == COARSE_REQUEST || requestCode == FINE_REQUEST) {
+//            acessaLocalizacao()
         }
         if (requestCode == EXTERNAL_STORAGE_PERMISSION_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (isExternalStorageWritable()) {
                     if (isExternalStorageWritable()) {
 //                        acessaLocalizacao()
+                        Toast.makeText(requireActivity(), "Permite gravação", Toast.LENGTH_LONG)
+                            .show()
                     }
                 }
             }
+        }
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                startActivityForResult(cameraIntent, CAMERA_REQUEST)
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CAMERA_REQUEST && resultCode == AppCompatActivity.RESULT_OK) {
+            val imagem = data?.extras!!["data"] as Bitmap?
+            val imgFoto = requireActivity().findViewById<ImageView>(R.id.imgFoto)
+            imgFoto.setImageBitmap(imagem)
+//            foto.foto = data.extras!!["data"] as String?
         }
     }
 
@@ -191,25 +237,47 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
             )
         } else {
             if (isExternalStorageWritable()) {
-                val dataAtual = dateFormat.format(Date())
-
-                val feleName = anotacao.titulo + "(" + dataAtual + ")" + ".txt"
+                val fileName = anotacao.titulo + "(" + anotacao.data + ")" + ".txt"
                 val builder = StringBuilder()
                 builder.append("Data: ").append(anotacao.data).append("\n")
                     .append("Longitude: ").append(anotacao.longitude).append("\n")
                     .append("Latitude: ").append(anotacao.latitude).append("\n")
-                    .append("Titulo: ").append(anotacao.latitude).append("\n")
-                    .append("Texto: ").append(anotacao.latitude).append("\n")
+                    .append("Titulo: ").append(anotacao.titulo).append("\n")
+                    .append("Texto: ").append(anotacao.texto).append("\n")
 
                 val registroTxt = builder.toString()
 
-                val fileOutputStream = getActivity()?.openFileOutput(feleName, AppCompatActivity.MODE_APPEND)
+                val fileOutputStream =
+                    getActivity()?.openFileOutput(fileName, AppCompatActivity.MODE_APPEND)
                 fileOutputStream?.write(registroTxt.toByteArray())
                 fileOutputStream?.close()
             }
         }
     }
 
+    private fun gravaRegistroFoto(foto: Foto) {
+        if (getActivity()?.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            this.requestPermissions(
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
+                EXTERNAL_STORAGE_PERMISSION_CODE
+            )
+        } else {
+            if (isExternalStorageWritable()) {
+                val fileName = anotacao.titulo + "(" + anotacao.data + ")" + ".fig"
+                val builder = StringBuilder()
+                builder.append("Foto: ").append(foto.foto).append("\n")
+
+                val registroTxt = builder.toString()
+
+                val fileOutputStream =
+                    getActivity()?.openFileOutput(fileName, AppCompatActivity.MODE_APPEND)
+                fileOutputStream?.write(registroTxt.toByteArray())
+                fileOutputStream?.close()
+            }
+        }
+    }
 
     private fun validaCamposAnotacao(titulo: String, texto: String): Boolean {
         var mensagem: String = ""
@@ -229,31 +297,31 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
     }
 
     private fun atualizaListaanotacaos() {
-//        val anotacaos: ArrayList<Anotacao> = ArrayList()
+//        val file: File
+//        val minhaLista: ArrayList<String>
 //
-//        obj.addOnSuccessListener {
-//            for (objeto in it) {
-//                val anotacao = objeto.toObject(anotacao::class.java)
-//                if (!anotacao.nome.isNullOrBlank()) {
-//                    anotacaos.add(anotacao)
-//                    idanotacaos.add(anotacao.id!!)
-//                }
-//            }
-//            val lstanotacaos =
-//                this.requireActivity().findViewById<RecyclerView>(R.id.lstanotacaos)
-//            lstanotacaos.layoutManager = LinearLayoutManager(this.requireActivity())
-//            val adapter = ListaanotacaoAdapter(anotacaos)
-//            adapter.setRecyclerViewItemListner(this)
-//            lstanotacaos.adapter = adapter
-//        }.addOnFailureListener {
-//            val a = "erro"
+//        minhaLista = ArrayList()
+//
+//        val root_sd = Environment.getExternalStorageDirectory().toString()
+//        file = File("$root_sd/pasta")
+//        val list: Array<File> = file.listFiles() as Array<File>
+//
+//        for (i in list.indices) {
+//            minhaLista.add(list[i].getName())
 //        }
+//        val lstanotacaos =
+//            this.requireActivity().findViewById<RecyclerView>(R.id.lstanotacaos)
+//        lstanotacaos.layoutManager = LinearLayoutManager(this.requireActivity())
+//        val adapter = ListaAnotacaoAdapter(minhaLista)
+//        adapter.setRecyclerViewItemListner(this)
+//        lstanotacaos.adapter = adapter
     }
 
-    private fun atualizaanotacao(anotacao: Anotacao, operacao: String) {
+    private fun atualizaAnotacao(operacao: String) {
         when (operacao) {
             "incluir" -> {
                 gravaRegistro(anotacao)
+                gravaRegistroFoto(foto)
                 Toast.makeText(
                     this.requireActivity(),
                     "Inclusão realizada com sucesso.",
@@ -306,7 +374,7 @@ class AnotacaoFragment : Fragment(), RecyclerViewItemListner, LocationListener{
 //        obj.addOnSuccessListener {
 //            anotacao = it.toObject(anotacao::class.java)!!
 //            if (!anotacao.nome.isNullOrBlank()) {
-//                atualizaanotacao(anotacao, "excluir")
+//                atualizaAnotacao(anotacao, "excluir")
 //            }
 //        }.addOnFailureListener {
 //        }
