@@ -25,6 +25,7 @@ class LoginFragment : Fragment() {
 
     private lateinit var mAuth: FirebaseAuth
     private var mUser: FirebaseUser? = null
+    private lateinit var loja : Loja
 
     var usuario = Usuario()
 
@@ -34,6 +35,7 @@ class LoginFragment : Fragment() {
     private lateinit var btnCriar: Button
     private lateinit var btnLogin: Button
     private lateinit var btnFirebaseUi: Button
+    private lateinit var btnPremium: Button
 
     private val sharedViewModel: DadosViewModel by activityViewModels()
 
@@ -65,6 +67,7 @@ class LoginFragment : Fragment() {
         btnLogin = fragmentBinding.findViewById(R.id.btnLogin)
         btnCriar = fragmentBinding.findViewById(R.id.btnCriar)
         btnFirebaseUi = fragmentBinding.findViewById(R.id.btnFirebaseUi)
+        btnPremium = fragmentBinding.findViewById<Button>(R.id.btnPremium)
 
         txtUsuarioLogado.setText(usuario.email)
 
@@ -138,6 +141,15 @@ class LoginFragment : Fragment() {
                 .setAvailableProviders(providers)
                 .build()
             signInLauncher.launch(signInIntent)
+        }
+
+//        loja = Loja(AppCompatActivity())
+
+        val btnComprar = fragmentBinding.findViewById<Button>(R.id.btnPremium)
+        btnComprar.setOnClickListener {
+
+//            val produto = loja.produtos.get(0)
+//            loja.efetuarCompra(produto)
         }
 
 //        findNavController().navigate(R.id.action_loginFragment_to_pesquisaFragment)

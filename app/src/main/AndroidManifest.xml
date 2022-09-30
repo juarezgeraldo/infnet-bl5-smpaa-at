@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.infnet.juarez.avaliacaolimpeza">
 
+    <uses-permission android:name="com.android.vending.BILLING" />
+
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -29,6 +31,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3393018088055719~4490314006" />
+        <!--            android:value="ca-app-pub-3393018088055719~4490314006"/>-->
+
     </application>
 
 </manifest>
